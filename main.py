@@ -2,12 +2,12 @@ import telebot
 import google.generativeai as genai
 import time
 import threading
+import os
 from flask import Flask
 
-# --- CONFIGURATION ---
-BOT_TOKEN = "8004710104:AAFdJQstVTI0c3louxo7fp_16rWzgRJ6WLw"
-GEMINI_KEY = "AQ.Ab8RN6LvUvtFcSLmPghKovSjmsfOqOwSNvaLS8rPgcLUp3g8jw"
-# ---------------------
+# Render ke environment variables se tokens uthana (100% Secure)
+BOT_TOKEN = os.environ.get("TELEGRAM_TOKEN")
+GEMINI_KEY = os.environ.get("GEMINI_API_KEY")
 
 bot = telebot.TeleBot(BOT_TOKEN)
 genai.configure(api_key=GEMINI_KEY)
@@ -15,15 +15,12 @@ model = genai.GenerativeModel('gemini-1.5-flash')
 
 active_tasks = {} 
 
-# Dummy Flask server Render ko khush rakhne ke liye
 app = Flask(__name__)
 @app.route('/')
 def home():
     return "Bot is alive!"
 
 def run_flask():
-    # Render automatic 'PORT' environment variable deta hai, nahi to 8080 use hoga
-    import os
     port = int(os.environ.get("PORT", 8080))
     app.run(host='0.0.0.0', port=port)
 
@@ -57,7 +54,5 @@ def handle_chat(message):
         threading.Thread(target=nagging_loop, args=(chat_id, task_name)).start()
 
 if __name__ == "__main__":
-    # Flask server background me chalega taaki port open rahe
     threading.Thread(target=run_flask).start()
-    # Telegram bot polling
     bot.polling()
